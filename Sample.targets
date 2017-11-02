@@ -72,8 +72,10 @@
 	<!-- Build Directories -->
 	<PropertyGroup>
 		<InstallersBaseDir>$(RootDir)/BuildDir</InstallersBaseDir>
-		<ProductBuildDir>$(InstallersBaseDir)/$(SafeProductName) $(MajorVersion) Build</ProductBuildDir>
-		<ProductBuildMasterDir>$(InstallersBaseDir)/$(SafeProductName) Build Master</ProductBuildMasterDir>
+		<ProductBuildDir>$(InstallersBaseDir)/$(SafeProductName)_$(MajorVersion)_Build</ProductBuildDir>
+		<ProductBuildMasterDir>$(InstallersBaseDir)/$(SafeProductName)_Build_Master</ProductBuildMasterDir>
+		<BinDirSuffix>objects/$(SafeProductName)</BinDirSuffix>
+		<DataDirSuffix>$(BinDirSuffix)_Data</DataDirSuffix>
 	</PropertyGroup>
 
 	<!-- ########################################################################################################## -->
@@ -146,7 +148,7 @@
 		<!-- <ItemGroup>
 		<! - 	<BuildMasterFiles Include="$(InstallersBaseDir)/$(SafeProductName) Build Master/**/*"/>
 		<! - </ItemGroup>
-		<! - <Copy SourceFiles="@(BuildMasterFiles)" DestinationFolder="$(ProductBuildDir)"/> -->
+		<! - <Copy SourceFiles="@(BuildMasterFiles)" DestinationFolder="$(ProductBuildDir)/%(RecursiveDir)"/> -->
 	</Target>
 
 	<Target Name="CopyFilesToInstall">
@@ -155,15 +157,15 @@
 			<BinFiles Include="$(RootDir)/$(SafeProductName)/bin/$(Platform)/$(CFG)/**/*"/>
 			<DataFiles Include="$(RootDir)/$(SafeProductName) Data Folder/**/*"/>
 		</ItemGroup>
-		<Copy SourceFiles="@(BinFiles)" OverwriteReadonlyFiles="true" DestinationFolder="$(ProductBuildDir)/objects/$(SafeProductName)"/>
-		<Copy SourceFiles="@(DataFiles)" OverwriteReadonlyFiles="true" DestinationFolder="$(ProductBuildDir)/objects/$(SafeProductName) Data Folder"/>
+		<Copy SourceFiles="@(BinFiles)" OverwriteReadonlyFiles="true" DestinationFolder="$(ProductBuildDir)/$(BinDirSuffix)/%(RecursiveDir)"/>
+		<Copy SourceFiles="@(DataFiles)" OverwriteReadonlyFiles="true" DestinationFolder="$(ProductBuildDir)/$(DataDirSuffix)/%(RecursiveDir)"/>
 	</Target>
 
 	<Target Name="CopyBuildToMaster" >
 		<ItemGroup>
-			<ObjectFiles Include="$(ProductBuildDir)/Objects/**/*"/>
+			<ObjectFiles Include="$(ProductBuildDir)/objects/**/*"/>
 		</ItemGroup>
-		<Copy SourceFiles="@(ObjectFiles)" DestinationFolder="$(ProductBuildMasterDir)"/>
+		<Copy SourceFiles="@(ObjectFiles)" DestinationFolder="$(ProductBuildMasterDir)/objects/%(RecursiveDir)"/>
 	</Target>
 
 	<Target Name="GetDotNetFiles" >
@@ -265,7 +267,7 @@
 		<PropertyGroup>
 			<Revision>$(MinorVersion).$(buildnumber.build)</Revision>
 		</PropertyGroup>
-		<WriteLinesToFile Overwrite="true" File="$(ProductBuildDir)/objects/$(SafeProductName)/CurrentVersion.number" Lines="$(Revision)"/>
+		<WriteLinesToFile Overwrite="true" File="$(ProductBuildDir)/$(BinDirSuffix)/CurrentVersion.number" Lines="$(Revision)"/>
 	</Target>
 
 	<Target Name="ResetBuildNumberFile">
@@ -290,7 +292,7 @@
 		<PropertyGroup>
 			<MsiFile>$(SafeProductName)_$(Revision).msi</MsiFile>
 			<BaseBuildDir>$(RootDir)/$(SafeProductName)/WixInstaller/BaseInstallerBuild</BaseBuildDir>
-			<BaseBuildArgs><![CDATA["$(ProductName)" $(SafeProductName) $(VersionSeg1).$(VersionSeg2).$(VersionSeg3).$(VersionSeg4) $(ProductIdGuid) $(UpgradeCodeGuid) "$(ProductBuildDir)/Objects/$(SafeProductName)" "$(ProductBuildDir)/Objects/$(SafeProductName) Data Folder" $(CopyrightYear) "$(Manufacturer)" "$(CertPath)" "@(CertPass)"]]></BaseBuildArgs>
+			<BaseBuildArgs><![CDATA["$(ProductName)" $(SafeProductName) $(VersionSeg1).$(VersionSeg2).$(VersionSeg3).$(VersionSeg4) $(ProductIdGuid) $(UpgradeCodeGuid) "$(ProductBuildDir)/$(BinDirSuffix)" "$(ProductBuildDir)/$(DataDirSuffix)" $(CopyrightYear) "$(Manufacturer)" "$(CertPath)" "@(CertPass)"]]></BaseBuildArgs>
 		</PropertyGroup>
 		<Exec WorkingDirectory="$(BaseBuildDir)" Command="buildBaseInstaller.bat $(BaseBuildArgs)" />
 
@@ -302,13 +304,13 @@
 	</Target>
 
 	<Target Name="BuildProductPatchMsp" DependsOnTargets="ReadCertPassFile">
-		<ReadLinesFromFile File="$(ProductBuildMasterDir)/Objects/$(SafeProductName)/CurrentVersion.number">
+		<ReadLinesFromFile File="$(ProductBuildMasterDir)/$(BinDirSuffix)/CurrentVersion.number">
 			<Output TaskParameter="Lines" ItemName="BaseVersion" />
 		</ReadLinesFromFile>
 		<PropertyGroup>
 			<MspFile>$(SafeProductName)_$(Revision).msp</MspFile>
 			<PatchDir>$(RootDir)/$(SafeProductName)/WixInstaller/CreateUpdatePatch</PatchDir>
-			<PatchArgs><![CDATA["$(ProductName)$(SafeProductName)" $(SafeProductName) 1.0.0.1 $(Revision) "$(ProductBuildMasterDir)/Objects/$(SafeProductName)" "$(ProductBuildDir)/Objects/$(SafeProductName)" "$(ProductBuildMasterDir)/Objects/$(SafeProductName) Data Folder" "$(ProductBuildDir)/Objects/$(SafeProductName) Data Folder" $(ProductIdGuid) $(UpgradeCodeGuid) $(CompGGS) "$(Manufacturer) "$(CertPath)" "@(CertPass)""]]></PatchArgs>
+			<PatchArgs><![CDATA["$(ProductName)$(SafeProductName)" $(SafeProductName) 1.0.0.1 $(Revision) "$(ProductBuildMasterDir)/$(BinDirSuffix)" "$(ProductBuildDir)/$(BinDirSuffix)" "$(ProductBuildMasterDir)/$(DataDirSuffix)" "$(ProductBuildDir)/$(DataDirSuffix)" $(ProductIdGuid) $(UpgradeCodeGuid) $(CompGGS) "$(Manufacturer) "$(CertPath)" "@(CertPass)""]]></PatchArgs>
 		</PropertyGroup>
 
 		<Exec WorkingDirectory="$(PatchDir)" Command="buildPatch.bat $(PatchArgs)"/>

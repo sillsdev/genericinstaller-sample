@@ -11,8 +11,8 @@
 	<property name="VersionSeg1" value="1" />
 	<property name="VersionSeg2" value="0" />
 	<property name="VersionSeg3" value="0" />
-	<property name="VersionSeg4" value="1" />  <!-- each base build is revision 1. Don't change this.-->
-	<property name="CopyrightYear" value="2017" />
+	<property name="VersionSeg4" value="1" />  <!-- each base build is BuildVersion 1. Don't change this.-->
+	<property name="CopyrightYear" value="2018" />
 	<property name="Manufacturer" value="SIL International" />
 	<property name="CertPath" value="../ia.p12" />
 	
@@ -44,15 +44,16 @@
 	<!-- ### Property definitions                                                                               ### -->	
 	<!-- ########################################################################################################## -->
 
-    <property name="MajorVersion" value="${VersionSeg1}.${VersionSeg2}" />    
-    <property name="MinorVersion" value="${MajorVersion}.${VersionSeg3}" />
-    <property name="Revision" value="${MinorVersion}.${VersionSeg4}" />
+    <property name="MajorVersion" value="${VersionSeg1}" />    
+    <property name="MinorVersion" value="${MajorVersion}.${VersionSeg2}" />    
+    <property name="PatchVersion" value="${MinorVersion}.${VersionSeg3}" />
+    <property name="BuildVersion" value="${PatchVersion}.${VersionSeg4}" />
     <property name="CFG" value="release" />	
     <property name="Platform" value="x86" />	
 
 	<!-- Build Directories -->
     <property name="Installers.Base.Dir" value="./BuildDir" />	
-    <property name="Product.Build.Dir" value="${Installers.Base.Dir}/${SafeProductName} ${MajorVersion} Build" />
+    <property name="Product.Build.Dir" value="${Installers.Base.Dir}/${SafeProductName} ${MinorVersion} Build" />
     <property name="Product.BuildMaster.Dir" value="${Installers.Base.Dir}/${SafeProductName} Build Master" />
 	
 	<!-- ########################################################################################################## -->
@@ -215,7 +216,7 @@
 
     <target name="UpdateVersion">
         <version buildtype="Increment" />
-        <property name="Revision" value="${MinorVersion}.${buildnumber.build}" />
+        <property name="BuildVersion" value="${PatchVersion}.${buildnumber.build}" />
 
         <asminfo output="${SafeProductName}/CommonVersionInfo.cs" language="CSharp">
             <imports>
@@ -223,20 +224,20 @@
                 <import namespace="System.Runtime.CompilerServices" />
             </imports>
             <attributes>
-                <attribute type="AssemblyVersion" value='"${Revision}"' asis="true" />
-                <attribute type="AssemblyFileVersion" value='"${Revision}"' asis="true" />
+                <attribute type="AssemblyVersion" value='"${BuildVersion}"' asis="true" />
+                <attribute type="AssemblyFileVersion" value='"${BuildVersion}"' asis="true" />
             </attributes>
         </asminfo>
     </target>
 
     <target name="WriteVersionFile">
-        <property name="Revision" value="${MinorVersion}.${buildnumber.build}" />
+        <property name="BuildVersion" value="${PatchVersion}.${buildnumber.build}" />
         <delete file="${Product.Build.Dir}/objects/${SafeProductName}/CurrentVersion.number" />
-        <echo file="${Product.Build.Dir}/objects/${SafeProductName}/CurrentVersion.number">${Revision}</echo>
+        <echo file="${Product.Build.Dir}/objects/${SafeProductName}/CurrentVersion.number">${BuildVersion}</echo>
     </target>
 	
 	<target name="ResetBuildNumberFile">
-        <property name="ResetVersion" value="${MajorVersion}.0.0" />
+        <property name="ResetVersion" value="${MinorVersion}.0.0" />
         <delete file="./build.number" />
         <echo file="./build.number">${ResetVersion}</echo>
 	</target>
@@ -252,7 +253,7 @@
 	
 	<target name="BuildProductBaseMsi">
 		<call target="ReadCertPassFile" />
-        <property name="MsiFile" value="${SafeProductName}_${Revision}.msi" />
+        <property name="MsiFile" value="${SafeProductName}_${BuildVersion}.msi" />
 		<exec program="buildBaseInstaller.bat" basedir="./${SafeProductName}/WixInstaller/BaseInstallerBuild" >
 			<arg value="${ProductName}" />
 			<arg value="${SafeProductName}" />
@@ -278,13 +279,13 @@
 	<target name="BuildProductPatchMsp">
 		<call target="ReadCertPassFile" />
 		<loadfile file="${Product.BuildMaster.Dir}/Objects/${SafeProductName}/CurrentVersion.number" property="BaseVersion" />
-        <property name="MspFile" value="${SafeProductName}_${Revision}.msp" />
+        <property name="MspFile" value="${SafeProductName}_${BuildVersion}.msp" />
 				
 		<exec program="buildPatch.bat" basedir="./${SafeProductName}/WixInstaller/CreateUpdatePatch" >
 			<arg value="${ProductName}" />
 			<arg value="${SafeProductName}" />
 			<arg value="${BaseVersion}" />  
-			<arg value="${Revision}" />
+			<arg value="${BuildVersion}" />
 			<arg value="../../../${Product.BuildMaster.Dir}/Objects/${SafeProductName}" />
 			<arg value="../../../${Product.Build.Dir}/Objects/${SafeProductName}" />
 			<arg value="../../../${Product.BuildMaster.Dir}/Objects/${SafeProductName} Data Folder" />

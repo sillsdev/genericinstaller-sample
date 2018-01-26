@@ -3,7 +3,7 @@
 REM cause Environment variable changes to be lost after this process dies:
 setlocal
 
-call SetVCVars.bat
+call SetBuildVars.bat
 
 REM Run the next target only if the previous target succeeded
 (

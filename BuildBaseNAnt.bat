@@ -1,3 +1,3 @@
 @setlocal
-@call SetVCVars.bat
+@call SetBuildVars.bat
 NAnt.exe -buildfile:Sample.build BuildRelease

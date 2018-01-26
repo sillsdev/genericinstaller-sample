@@ -1,5 +1,11 @@
 @echo off
 
+REM The installer for the WiX toolset sets WIX=<the WiX install dir>, but doesn't add it to the path
+REM REVIEW (Hasso) 2018.01: is this really this script's responsibility, or somebody else's?
+set PATH=%PATH%;%WIX%\bin
+
+REM the following lines query the registry for the VisualStudio 2015 install directory and run its vcvarsall.bat
+
 Set RegQry=HKLM\Hardware\Description\System\CentralProcessor\0
 
 REG.exe Query %RegQry% > checkOS.txt

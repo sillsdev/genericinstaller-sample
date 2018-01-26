@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="BuildRelease" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="14.0">
-	<UsingTask TaskName="DownloadFile" AssemblyFile="FwBuildTasks.dll"/>
 	<UsingTask TaskName="ForceDelete" AssemblyFile="FwBuildTasks.dll"/>
 
 	<PropertyGroup>
@@ -20,7 +19,7 @@
 		<VersionSeg2>0</VersionSeg2>
 		<VersionSeg3>0</VersionSeg3>
 		<VersionSeg4>1</VersionSeg4>  <!-- each base build is revision 1. Don't change this.-->
-		<CopyrightYear>2017</CopyrightYear>
+		<CopyrightYear>2018</CopyrightYear>
 		<Manufacturer>SIL International</Manufacturer>
 		<CertPath>$(RootDir)/../ia.p12</CertPath> <!-- yes, this is outside the repository. BYOCertificate. -->
 	</PropertyGroup>
@@ -61,10 +60,10 @@
 	<!-- ### Property definitions                                                                               ### -->
 	<!-- ########################################################################################################## -->
 	<PropertyGroup>
-		<!-- REVIEW (Hasso) 2017.09: what do we call each segment again? Major.Minor.(Build|Patch).(Revision|Build) -->
-		<MajorVersion>$(VersionSeg1).$(VersionSeg2)</MajorVersion>
-		<MinorVersion>$(MajorVersion).$(VersionSeg3)</MinorVersion>
-		<Revision>$(MinorVersion).$(VersionSeg4)</Revision>
+		<MajorVersion>$(VersionSeg1)</MajorVersion>
+		<MinorVersion>$(VersionSeg1).$(VersionSeg2)</MinorVersion>
+		<PatchVersion>$(MinorVersion).$(VersionSeg3)</PatchVersion>
+		<BuildVersion>$(PatchVersion).$(VersionSeg4)</BuildVersion>
 		<CFG>release</CFG>
 		<Platform>x86</Platform>
 	</PropertyGroup>
@@ -72,7 +71,7 @@
 	<!-- Build Directories -->
 	<PropertyGroup>
 		<InstallersBaseDir>$(RootDir)/BuildDir</InstallersBaseDir>
-		<ProductBuildDir>$(InstallersBaseDir)/$(SafeProductName)_$(MajorVersion)_Build</ProductBuildDir>
+		<ProductBuildDir>$(InstallersBaseDir)/$(SafeProductName)_$(MinorVersion)_Build</ProductBuildDir>
 		<ProductBuildMasterDir>$(InstallersBaseDir)/$(SafeProductName)_Build_Master</ProductBuildMasterDir>
 		<BinDirSuffix>objects/$(SafeProductName)</BinDirSuffix>
 		<DataDirSuffix>$(BinDirSuffix)_Data</DataDirSuffix>
@@ -172,22 +171,18 @@
 		<PropertyGroup>
 			<WixLibsDir>$(RootDir)/$(SafeProductName)/WixInstaller/libs</WixLibsDir>
 		</PropertyGroup>
-		<DownloadFile Address="http://go.microsoft.com/fwlink/?LinkId=322115"
-			LocalFilename="$(WixLibsDir)/NDP451-KB2858728-x86-x64-AllOS-ENU.exe"
-			Condition="!Exists('$(WixLibsDir)/NDP451-KB2858728-x86-x64-AllOS-ENU.exe')"/> <!-- .net 4.5.1 -->
-		<DownloadFile Address="https://download.microsoft.com/download/5/B/C/5BC5DBB3-652D-4DCE-B14A-475AB85EEF6E/vcredist_x86.exe"
-			LocalFilename="$(WixLibsDir)/vcredist_x86.exe"
-			Condition="!Exists('$(WixLibsDir)/vcredist_x86.exe')"/>			<!-- VisualC++ 10 runtime -->
-		<DownloadFile Address="https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x86.exe"
-			LocalFilename="$(WixLibsDir)/vcredist_2012_x86.exe"
-			Condition="!Exists('$(WixLibsDir)/vcredist_2012_x86.exe')"/>	<!-- VisualC++ 11 runtime -->
-		<DownloadFile Address="http://download.microsoft.com/download/0/5/6/056dcda9-d667-4e27-8001-8a0c6971d6b1/vcredist_x86.exe"
-			LocalFilename="$(WixLibsDir)/vcredist_2013_x86.exe"
-			Condition="!Exists('$(WixLibsDir)/vcredist_2013_x86.exe')"/>	<!-- VisualC++ 12 runtime -->
+		<DownloadFileOnce Address="http://go.microsoft.com/fwlink/?LinkId=322115"
+			LocalFilename="$(WixLibsDir)/NDP451-KB2858728-x86-x64-AllOS-ENU.exe"/> <!-- .net 4.5.1 -->
+		<DownloadFileOnce Address="https://download.microsoft.com/download/5/B/C/5BC5DBB3-652D-4DCE-B14A-475AB85EEF6E/vcredist_x86.exe"
+			LocalFilename="$(WixLibsDir)/vcredist_x86.exe"/>			<!-- VisualC++ 10 runtime -->
+		<DownloadFileOnce Address="https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x86.exe"
+			LocalFilename="$(WixLibsDir)/vcredist_2012_x86.exe"/>		<!-- VisualC++ 11 runtime -->
+		<DownloadFileOnce Address="http://download.microsoft.com/download/0/5/6/056dcda9-d667-4e27-8001-8a0c6971d6b1/vcredist_x86.exe"
+			LocalFilename="$(WixLibsDir)/vcredist_2013_x86.exe"/>		<!-- VisualC++ 12 runtime -->
 	</Target>
 
 	<!-- ########################################################################################################## -->
-	<!-- ### Download FwBuildTasks; needed for DownloadFile and ForceDelete tasks.                              ### -->
+	<!-- ### Download FwBuildTasks; needed for the ForceDelete task.                                            ### -->
 	<!-- ########################################################################################################## -->
 	
 	<PropertyGroup>
@@ -196,14 +191,14 @@
 	</PropertyGroup>
 
 	<Target Name="DownloadBuildTasks" Condition="!Exists($(FwBuildTasksPath))">
-		<DownloadFileOnWindows Address="$(FwBuildTasksUrl)" OutputFilename="$(FwBuildTasksPath)" />
+		<DownloadFileOnce Address="$(FwBuildTasksUrl)" LocalFilename="$(FwBuildTasksPath)" />
 	</Target>
 
-	<UsingTask TaskName="DownloadFileOnWindows" TaskFactory="CodeTaskFactory"
+	<UsingTask TaskName="DownloadFileOnce" TaskFactory="CodeTaskFactory"
 		AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
 		<ParameterGroup>
 			<Address ParameterType="System.String" Required="true" />
-			<OutputFilename ParameterType="System.String" Required="true" />
+			<LocalFilename ParameterType="System.String" Required="true" />
 		</ParameterGroup>
 		<Task>
 			<Reference Include="System.Core" />
@@ -214,23 +209,25 @@
 			<Using Namespace="Microsoft.Build.Utilities" />
 			<Code Type="Fragment" Language="cs">
 				<![CDATA[
-				try
-				{
-					OutputFilename = Path.GetFullPath(OutputFilename);
-
-					Log.LogMessage(string.Format("Downloading {0}...", Path.GetFileName(OutputFilename)));
-					using (var webClient = new WebClient())
+					try
 					{
-						webClient.DownloadFile(Address, OutputFilename);
+						LocalFilename = Path.GetFullPath(LocalFilename);
+						if (File.Exists(LocalFilename))
+							return true;
+
+						Log.LogMessage(string.Format("Downloading {0}...", Path.GetFileName(LocalFilename)));
+						using (var webClient = new WebClient())
+						{
+							webClient.DownloadFile(Address, LocalFilename);
+						}
+						return true;
 					}
-					return true;
-				}
-				catch (Exception ex)
-				{
-					Log.LogErrorFromException(ex);
-					return false;
-				}
-			]]>
+					catch (Exception ex)
+					{
+						Log.LogErrorFromException(ex);
+						return false;
+					}
+				]]>
 			</Code>
 		</Task>
 	</UsingTask>
@@ -245,34 +242,31 @@
 			NAnt has a task to generate the Assembly Info file; MSBuild does not.
 			MSBuild Community Tasks or Extension Pack have rough equivalents of both; feel free to NuGet the appropriate
 			packages and use them if desired. -->
-		<!-- version buildtype="Increment" / -->
+		<!-- version buildtype="Increment" / >
 		<PropertyGroup>
-			<!-- buildnumber.build>1</buildnumber.build -->
-			<Revision>$(MinorVersion).$(buildnumber.build)</Revision>
+			<buildnumber.build>1</buildnumber.build>
+			<BuildVersion>$(PatchVersion).$(buildnumber.build)</BuildVersion>
 		</PropertyGroup>
 
-		<!-- asminfo output="$(SafeProductName)/CommonVersionInfo.cs" language="CSharp">
+		<asminfo output="$(SafeProductName)/CommonVersionInfo.cs" language="CSharp">
 			<imports>
 				<import namespace="System.Reflection" />
 				<import namespace="System.Runtime.CompilerServices" />
 			</imports>
 			<attributes>
-				<attribute type="AssemblyVersion" value='"$(Revision)"' asis="true" />
-				<attribute type="AssemblyFileVersion" value='"$(Revision)"' asis="true" />
+				<attribute type="AssemblyVersion" value='"$(BuildVersion)"' asis="true" />
+				<attribute type="AssemblyFileVersion" value='"$(BuildVersion)"' asis="true" />
 			</attributes>
 		</asminfo -->
 	</Target>
 
 	<Target Name="WriteVersionFile" Condition="Exists($(MSBuildExtensionTargets))">
-		<PropertyGroup>
-			<Revision>$(MinorVersion).$(buildnumber.build)</Revision>
-		</PropertyGroup>
-		<WriteLinesToFile Overwrite="true" File="$(ProductBuildDir)/$(BinDirSuffix)/CurrentVersion.number" Lines="$(Revision)"/>
+		<WriteLinesToFile Overwrite="true" File="$(ProductBuildDir)/$(BinDirSuffix)/CurrentVersion.number" Lines="$(BuildVersion)"/>
 	</Target>
 
 	<Target Name="ResetBuildNumberFile">
 		<PropertyGroup>
-			<ResetVersion>$(MajorVersion).0.0</ResetVersion>
+			<ResetVersion>$(MinorVersion).0.0</ResetVersion>
 		</PropertyGroup>
 		<WriteLinesToFile Overwrite="true" File="./build.number" Lines="$(ResetVersion)"/>
 	</Target>
@@ -290,9 +284,9 @@
 
 	<Target Name="BuildProductBaseMsi" DependsOnTargets="ReadCertPassFile">
 		<PropertyGroup>
-			<MsiFile>$(SafeProductName)_$(Revision).msi</MsiFile>
+			<MsiFile>$(SafeProductName)_$(BuildVersion).msi</MsiFile>
 			<BaseBuildDir>$(RootDir)/$(SafeProductName)/WixInstaller/BaseInstallerBuild</BaseBuildDir>
-			<BaseBuildArgs><![CDATA["$(ProductName)" $(SafeProductName) $(VersionSeg1).$(VersionSeg2).$(VersionSeg3).$(VersionSeg4) $(ProductIdGuid) $(UpgradeCodeGuid) "$(ProductBuildDir)/$(BinDirSuffix)" "$(ProductBuildDir)/$(DataDirSuffix)" $(CopyrightYear) "$(Manufacturer)" "$(CertPath)" "@(CertPass)"]]></BaseBuildArgs>
+			<BaseBuildArgs>"$(ProductName)" $(SafeProductName) $(BuildVersion) $(ProductIdGuid) $(UpgradeCodeGuid) "$(ProductBuildDir)/$(BinDirSuffix)" "$(ProductBuildDir)/$(DataDirSuffix)" $(CopyrightYear) "$(Manufacturer)" "$(CertPath)" "@(CertPass)"</BaseBuildArgs>
 		</PropertyGroup>
 		<Exec WorkingDirectory="$(BaseBuildDir)" Command="buildBaseInstaller.bat $(BaseBuildArgs)" />
 
@@ -308,9 +302,9 @@
 			<Output TaskParameter="Lines" ItemName="BaseVersion" />
 		</ReadLinesFromFile>
 		<PropertyGroup>
-			<MspFile>$(SafeProductName)_$(Revision).msp</MspFile>
+			<MspFile>$(SafeProductName)_$(BuildVersion).msp</MspFile>
 			<PatchDir>$(RootDir)/$(SafeProductName)/WixInstaller/CreateUpdatePatch</PatchDir>
-			<PatchArgs><![CDATA["$(ProductName)$(SafeProductName)" $(SafeProductName) 1.0.0.1 $(Revision) "$(ProductBuildMasterDir)/$(BinDirSuffix)" "$(ProductBuildDir)/$(BinDirSuffix)" "$(ProductBuildMasterDir)/$(DataDirSuffix)" "$(ProductBuildDir)/$(DataDirSuffix)" $(ProductIdGuid) $(UpgradeCodeGuid) $(CompGGS) "$(Manufacturer) "$(CertPath)" "@(CertPass)""]]></PatchArgs>
+			<PatchArgs>"$(ProductName)$(SafeProductName)" $(SafeProductName) 1.0.0.1 $(BuildVersion) "$(ProductBuildMasterDir)/$(BinDirSuffix)" "$(ProductBuildDir)/$(BinDirSuffix)" "$(ProductBuildMasterDir)/$(DataDirSuffix)" "$(ProductBuildDir)/$(DataDirSuffix)" $(ProductIdGuid) $(UpgradeCodeGuid) $(CompGGS) "$(Manufacturer)" "$(CertPath)" "@(CertPass)"</PatchArgs>
 		</PropertyGroup>
 
 		<Exec WorkingDirectory="$(PatchDir)" Command="buildPatch.bat $(PatchArgs)"/>

@@ -25,7 +25,14 @@ del StringCheck.txt
 set VALUE_NAME=ProductDir
 
 REM Check for presence of key first.
-reg query %KEY_NAME% /v %VALUE_NAME% 2>nul || (echo Build requires VisualStudio 2015! & exit /b 1)
+(
+	reg query %KEY_NAME% /v %VALUE_NAME% 2>nul
+) || (
+	REM TODO (Hasso) 2019.07: more robust way of loading VS 2017 vars
+	call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat" && goto :EOF
+) || (
+	echo Build requires Visual Studio 2015 or 2017! & exit /b 1
+)
 
 REM query the value. pipe it through findstr in order to find the matching line that has the value. only grab token 3 and the remainder of the line. %%b is what we are interested in here.
 set INSTALL_DIR=

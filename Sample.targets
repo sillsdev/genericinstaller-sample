@@ -286,7 +286,7 @@
 		<PropertyGroup>
 			<MsiFile>$(SafeProductName)_$(BuildVersion).msi</MsiFile>
 			<BaseBuildDir>$(RootDir)/$(SafeProductName)/WixInstaller/BaseInstallerBuild</BaseBuildDir>
-			<BaseBuildArgs>"$(ProductName)" $(SafeProductName) $(BuildVersion) $(ProductIdGuid) $(UpgradeCodeGuid) "$(ProductBuildDir)/$(BinDirSuffix)" "$(ProductBuildDir)/$(DataDirSuffix)" $(CopyrightYear) "$(Manufacturer)" "$(CertPath)" "@(CertPass)"</BaseBuildArgs>
+			<BaseBuildArgs>"$(ProductName)" $(SafeProductName) $(BuildVersion) $(ProductIdGuid) $(UpgradeCodeGuid) "$(ProductBuildDir)/$(BinDirSuffix)" "$(ProductBuildDir)/$(DataDirSuffix)" $(CopyrightYear) "$(Manufacturer)"</BaseBuildArgs>
 		</PropertyGroup>
 		<Exec WorkingDirectory="$(BaseBuildDir)" Command="buildBaseInstaller.bat $(BaseBuildArgs)" />
 
@@ -306,7 +306,7 @@
 		<PropertyGroup>
 			<MspFile>$(SafeProductName)_$(BuildVersion).msp</MspFile>
 			<PatchDir>$(RootDir)/$(SafeProductName)/WixInstaller/CreateUpdatePatch</PatchDir>
-			<PatchArgs>"$(ProductName)$(SafeProductName)" $(SafeProductName) 1.0.0.1 $(BuildVersion) "$(ProductBuildMasterDir)/$(BinDirSuffix)" "$(ProductBuildDir)/$(BinDirSuffix)" "$(ProductBuildMasterDir)/$(DataDirSuffix)" "$(ProductBuildDir)/$(DataDirSuffix)" $(ProductIdGuid) $(UpgradeCodeGuid) $(CompGGS) "$(Manufacturer)" "$(CertPath)" "@(CertPass)"</PatchArgs>
+			<PatchArgs>"$(ProductName)$(SafeProductName)" $(SafeProductName) 1.0.0.1 $(BuildVersion) "$(ProductBuildMasterDir)/$(BinDirSuffix)" "$(ProductBuildDir)/$(BinDirSuffix)" "$(ProductBuildMasterDir)/$(DataDirSuffix)" "$(ProductBuildDir)/$(DataDirSuffix)" $(ProductIdGuid) $(UpgradeCodeGuid) $(CompGGS) "$(Manufacturer)"</PatchArgs>
 		</PropertyGroup>
 
 		<Exec WorkingDirectory="$(PatchDir)" Command="buildPatch.bat $(PatchArgs)"/>

@@ -296,7 +296,7 @@
 		</ItemGroup>
 		<Move SourceFiles="@(InstallerFiles)" DestinationFolder="$(InstallersBaseDir)"/>
 
-		<WriteLinesToFile File="$(ProductBuildMasterDir)/$(BinDirSuffix)/CurrentVersion.number" Overwrite="true" Lines="$(BuildVersion)" />
+		<!-- <WriteLinesToFile File="$(ProductBuildMasterDir)/$(BinDirSuffix)/CurrentVersion.number" Overwrite="true" Lines="$(BuildVersion)" /> -->
 	</Target>
 
 	<Target Name="BuildProductPatchMsp" DependsOnTargets="ReadCertPassFile">
@@ -306,7 +306,7 @@
 		<PropertyGroup>
 			<MspFile>$(SafeProductName)_$(BuildVersion).msp</MspFile>
 			<PatchDir>$(RootDir)/$(SafeProductName)/WixInstaller/CreateUpdatePatch</PatchDir>
-			<PatchArgs>"$(ProductName)$(SafeProductName)" $(SafeProductName) $(BaseVersion) $(BuildVersion) "$(ProductBuildMasterDir)/$(BinDirSuffix)" "$(ProductBuildDir)/$(BinDirSuffix)" "$(ProductBuildMasterDir)/$(DataDirSuffix)" "$(ProductBuildDir)/$(DataDirSuffix)" $(ProductIdGuid) $(UpgradeCodeGuid) $(CompGGS) "$(Manufacturer)" "$(CertPath)" "@(CertPass)"</PatchArgs>
+			<PatchArgs>"$(ProductName)$(SafeProductName)" $(SafeProductName) 1.0.0.1 $(BuildVersion) "$(ProductBuildMasterDir)/$(BinDirSuffix)" "$(ProductBuildDir)/$(BinDirSuffix)" "$(ProductBuildMasterDir)/$(DataDirSuffix)" "$(ProductBuildDir)/$(DataDirSuffix)" $(ProductIdGuid) $(UpgradeCodeGuid) $(CompGGS) "$(Manufacturer)" "$(CertPath)" "@(CertPass)"</PatchArgs>
 		</PropertyGroup>
 
 		<Exec WorkingDirectory="$(PatchDir)" Command="buildPatch.bat $(PatchArgs)"/>
